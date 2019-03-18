@@ -49,23 +49,27 @@ namespace Yansoft.Rest
         public async Task<T> PutAsync<T>(string url, object content) =>
             await SendAsync<T>(new HttpRequestMessage { Method = HttpMethod.Put, RequestUri = new Uri(url, UriKind.RelativeOrAbsolute) }, content);
 
-        public async Task<T> SendAsync<T>(HttpRequestMessage request, object content)
+        public async Task<T> SendAsync<T>(HttpRequestMessage request, object content) =>
+            await SendAsync<T>(request, content, Converter ?? Serializer, Converter ?? Deserializer);
+
+        public async Task<T> SendAsync<T>(HttpRequestMessage request, object content, ISerializer serializer, IDeserializer deserializer)
         {
-            var serializer = Converter ?? Serializer;
             request.Content = new StringContent(serializer.Serialize(content), serializer.Encoding, serializer.ContentType);
 
             var response = await ExecuteAsync(request);
             var responseContent = await response.Content.ReadAsStringAsync();
-            return Deserialize<T>(responseContent);
+            return deserializer.Deserialize<T>(responseContent);
         }
 
-        public async Task<T> SendAsync<T>(HttpRequestMessage request)
+        public async Task<T> SendAsync<T>(HttpRequestMessage request) =>
+            await SendAsync<T>(request, Converter ?? Deserializer);
+
+        public async Task<T> SendAsync<T>(HttpRequestMessage request, IDeserializer deserializer)
         {
             var response = await ExecuteAsync(request);
             var responseContent = await response.Content.ReadAsStringAsync();
-            return Deserialize<T>(responseContent);
+            return deserializer.Deserialize<T>(responseContent);
         }
-
 
         public async Task<HttpResponseMessage> ExecuteAsync(HttpRequestMessage request, bool authRetry = true)
         {
@@ -120,11 +124,5 @@ namespace Yansoft.Rest
                 throw new InvalidOperationException($"Canot set {nameof(Converter)} to null when any of {nameof(Serializer)} or {nameof(Deserializer)} are null.");
             }
         }
-
-        private T Deserialize<T>(string value) =>
-            (Converter ?? Deserializer).Deserialize<T>(value);
-
-        private string Serialize(object value) =>
-           (Converter ?? Serializer).Serialize(value);
     }
 }
