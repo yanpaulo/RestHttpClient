@@ -1,0 +1,81 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>RestHttpClient</name>
+    </assembly>
+    <members>
+        <member name="E:Yansoft.Rest.RestHttpClient.AuthorizationFailed">
+            <summary>
+            Event fired every time a request fails with Unauthorized(401) status code.
+            </summary>
+        </member>
+        <member name="P:Yansoft.Rest.RestHttpClient.Authenticator">
+            <summary>
+            Gets or sets the Authenticator for this instance.
+            </summary>
+        </member>
+        <member name="P:Yansoft.Rest.RestHttpClient.Serializer">
+            <summary>
+            Gets or sets the Serializer for this instance.
+            </summary>
+        </member>
+        <member name="P:Yansoft.Rest.RestHttpClient.Deserializer">
+            <summary>
+            Gets or sets the Deserializer for this instance.
+            </summary>
+        </member>
+        <member name="P:Yansoft.Rest.RestHttpClient.Converter">
+            <summary>
+            Gets or sets the Converter for this instance.
+            </summary>
+        </member>
+        <member name="M:Yansoft.Rest.RestHttpClient.RestGetAsync``1(System.String)">
+            <summary>
+            Sends a GET request to the specified url and returns its content converted by a deserializer.
+            </summary>
+            <typeparam name="T">Type of the object to be returned.</typeparam>
+            <param name="url">Absolute or relative url to send the request to.</param>
+            <returns>Content returned by the server, serialized as T.</returns>
+        </member>
+        <member name="M:Yansoft.Rest.RestHttpClient.RestPostAsync``1(System.String,System.Object)">
+            <summary>
+            Sends a POST request to the specified url with its body serialized by a serializer and returns its content converted by a deserializer.
+            </summary>
+            <typeparam name="T">Type of the object to be returned.</typeparam>
+            <param name="url">Absolute or relative url to send the request to.</param>
+            <param name="content">Content to be serialized and send in the request body.</param>
+            <returns>Content returned by the server, serialized as T</returns>
+        </member>
+        <member name="M:Yansoft.Rest.RestHttpClient.RestPutAsync``1(System.String,System.Object)">
+            <summary>
+            Sends a PUT request to the specified url with its body serialized by a serializer and returns its content converted by a deserializer.
+            </summary>
+            <typeparam name="T">Type of the object to be returned.</typeparam>
+            <param name="url">Absolute or relative url to send the request to.</param>
+            <param name="content">Content to be serialized and send in the request body.</param>
+            <returns>Content returned by the server, serialized as T</returns>
+        </member>
+        <member name="M:Yansoft.Rest.RestHttpClient.RestDeleteAsync``1(System.String)">
+            <summary>
+            Sends a DELETE request to the specified url and returns its content converted by a deserializer.
+            </summary>
+            <typeparam name="T">Type of the object to be returned.</typeparam>
+            <param name="url">Absolute or relative url to send the request to.</param>
+        </member>
+        <member name="M:Yansoft.Rest.RestHttpClient.RestSendAsync(System.Net.Http.HttpRequestMessage,System.Boolean)">
+            <summary>
+            Sends a request specified by the request parameter.
+            </summary>
+            <param name="request">HttpRequestMessage instance describing the request.</param>
+            <param name="authRetry">Specifies wether the request should be retried in case of Unauthorized(401) status code on response.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Yansoft.Rest.RestHttpClient.OnAuthorizationError(System.Net.Http.HttpRequestMessage,System.Net.Http.HttpResponseMessage)">
+            <summary>
+            Method called every time a request fails with Unauthorized(401) status code.
+            </summary>
+            <param name="request"></param>
+            <param name="response"></param>
+        </member>
+    </members>
+</doc>

@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.329
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RestHttpClient", "RestHttpClient\RestHttpClient.csproj", "{EA7FCC9A-28AF-494D-8975-55C82BE87B1A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RestHttpClient", "Source\RestHttpClient.csproj", "{EA7FCC9A-28AF-494D-8975-55C82BE87B1A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RestHttpClient.Test", "RestHttpClient.Test\RestHttpClient.Test.csproj", "{2EEB3549-2AB4-4C51-8A6A-FCC89655F80E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RestHttpClient.Test", "Test\RestHttpClient.Test.csproj", "{2EEB3549-2AB4-4C51-8A6A-FCC89655F80E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
