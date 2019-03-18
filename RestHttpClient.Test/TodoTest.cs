@@ -16,7 +16,7 @@ namespace Yansoft.Rest.Test
         [Fact]
         public async void GetAll()
         {
-            var todos = await ws.GetAsync<List<Todo>>("todos");
+            var todos = await ws.RestGetAsync<List<Todo>>("todos");
 
             Assert.Equal(200, todos.Count);
         }
@@ -24,7 +24,7 @@ namespace Yansoft.Rest.Test
         [Fact]
         public async void GetSingle()
         {
-            var todo = await ws.GetAsync<Todo>("todos/1");
+            var todo = await ws.RestGetAsync<Todo>("todos/1");
 
             Assert.Equal(1, todo.Id);
         }
@@ -33,8 +33,8 @@ namespace Yansoft.Rest.Test
         public async void GetByFullUrlEqualToRelative()
         {
             const string path = "todos/1";
-            var relative = await ws.GetAsync<Todo>(path);
-            var full = await ws.GetAsync<Todo>($"https://jsonplaceholder.typicode.com/{path}");
+            var relative = await ws.RestGetAsync<Todo>(path);
+            var full = await ws.RestGetAsync<Todo>($"https://jsonplaceholder.typicode.com/{path}");
 
             Assert.Equal(relative, full);
         }
@@ -48,7 +48,7 @@ namespace Yansoft.Rest.Test
                 Title = "Lorem Ipsum"
             };
 
-            var item = await ws.PostAsync<Todo>("todos", todo);
+            var item = await ws.RestPostAsync<Todo>("todos", todo);
 
             Assert.Equal(todo.UserId, item.UserId);
             Assert.Equal(todo.Title, item.Title);
