@@ -15,44 +15,86 @@ namespace Yansoft.Rest
         #endregion
 
         #region Events
-        public event EventHandler<AuthorizationErrorEventArgs> AuthorizationFailed; 
+        /// <summary>
+        /// Event fired every time a request fails with Unauthorized(401) status code.
+        /// </summary>
+        public event EventHandler<AuthorizationErrorEventArgs> AuthorizationFailed;
         #endregion
 
         #region Properties
+        /// <summary>
+        /// Gets or sets the Authenticator for this instance.
+        /// </summary>
         public IAuthenticator Authenticator { get; set; }
 
+        /// <summary>
+        /// Gets or sets the Serializer for this instance.
+        /// </summary>
         public ISerializer Serializer
         {
             get { return serializer; }
             set { CheckSerializer(value); serializer = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the Deserializer for this instance.
+        /// </summary>
         public IDeserializer Deserializer
         {
             get { return deserializer; }
             set { CheckSerializer(value); deserializer = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the Converter for this instance.
+        /// </summary>
         public IConverter Converter
         {
             get { return converter; }
             set { CheckConverter(value); converter = value; }
-        } 
+        }
         #endregion
 
-        #region RestSendAsync Overloads
+        #region Quick Methods
+        /// <summary>
+        /// Sends a GET request to the specified url and returns its content converted by a deserializer.
+        /// </summary>
+        /// <typeparam name="T">Type of the object to be returned.</typeparam>
+        /// <param name="url">Absolute or relative url to send the request to.</param>
+        /// <returns>Content returned by the server, serialized as T.</returns>
         public async Task<T> RestGetAsync<T>(string url) =>
             await RestSendAsync<T>(new HttpRequestMessage { Method = HttpMethod.Get, RequestUri = new Uri(url, UriKind.RelativeOrAbsolute) });
 
-        public async Task<T> RestDeleteAsync<T>(string url) =>
-            await RestSendAsync<T>(new HttpRequestMessage { Method = HttpMethod.Delete, RequestUri = new Uri(url, UriKind.RelativeOrAbsolute) });
-
+        /// <summary>
+        /// Sends a POST request to the specified url with its body serialized by a serializer and returns its content converted by a deserializer.
+        /// </summary>
+        /// <typeparam name="T">Type of the object to be returned.</typeparam>
+        /// <param name="url">Absolute or relative url to send the request to.</param>
+        /// <param name="content">Content to be serialized and send in the request body.</param>
+        /// <returns>Content returned by the server, serialized as T</returns>
         public async Task<T> RestPostAsync<T>(string url, object content) =>
             await RestSendAsync<T>(new HttpRequestMessage { Method = HttpMethod.Post, RequestUri = new Uri(url, UriKind.RelativeOrAbsolute) }, content);
 
+        /// <summary>
+        /// Sends a PUT request to the specified url with its body serialized by a serializer and returns its content converted by a deserializer.
+        /// </summary>
+        /// <typeparam name="T">Type of the object to be returned.</typeparam>
+        /// <param name="url">Absolute or relative url to send the request to.</param>
+        /// <param name="content">Content to be serialized and send in the request body.</param>
+        /// <returns>Content returned by the server, serialized as T</returns>
         public async Task<T> RestPutAsync<T>(string url, object content) =>
             await RestSendAsync<T>(new HttpRequestMessage { Method = HttpMethod.Put, RequestUri = new Uri(url, UriKind.RelativeOrAbsolute) }, content);
 
+        /// <summary>
+        /// Sends a DELETE request to the specified url and returns its content converted by a deserializer.
+        /// </summary>
+        /// <typeparam name="T">Type of the object to be returned.</typeparam>
+        /// <param name="url">Absolute or relative url to send the request to.</param>
+        public async Task RestDeleteAsync<T>(string url) =>
+            await RestSendAsync(new HttpRequestMessage { Method = HttpMethod.Delete, RequestUri = new Uri(url, UriKind.RelativeOrAbsolute) });
+        #endregion
+
+        #region RestSendAsync Overloads
         public async Task<T> RestSendAsync<T>(HttpRequestMessage request) =>
             await RestSendAsync<T>(request, Converter ?? Deserializer);
 
@@ -80,6 +122,12 @@ namespace Yansoft.Rest
             return deserializer.Deserialize<T>(responseContent);
         }
 
+        /// <summary>
+        /// Sends a request specified by the request parameter.
+        /// </summary>
+        /// <param name="request">HttpRequestMessage instance describing the request.</param>
+        /// <param name="authRetry">Specifies wether the request should be retried in case of Unauthorized(401) status code on response.</param>
+        /// <returns></returns>
         public async Task<HttpResponseMessage> RestSendAsync(HttpRequestMessage request, bool authRetry = true)
         {
             try
@@ -111,6 +159,11 @@ namespace Yansoft.Rest
         #endregion
 
         #region Event Handlers
+        /// <summary>
+        /// Method called every time a request fails with Unauthorized(401) status code.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="response"></param>
         protected virtual void OnAuthorizationError(HttpRequestMessage request, HttpResponseMessage response)
         {
             AuthorizationFailed?.Invoke(this, new AuthorizationErrorEventArgs(request, response));
