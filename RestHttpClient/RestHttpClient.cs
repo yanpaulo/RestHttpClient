@@ -37,53 +37,57 @@ namespace Yansoft.Rest
             set { CheckConverter(value); converter = value; }
         }
 
+        public async Task<T> GetAsync<T>(string url) =>
+            await SendAsync<T>(new HttpRequestMessage { Method = HttpMethod.Get, RequestUri = new Uri(url, UriKind.RelativeOrAbsolute) });
 
-        private void CheckSerializer(object value, [CallerMemberName]string memberName = null)
-        {
-            if (value == null && Converter == null)
-            {
-                throw new InvalidOperationException($"Cannot set both {memberName} and {nameof(Converter)} to null.");
-            }
-        }
+        public async Task<T> DeleteAsync<T>(string url) =>
+            await SendAsync<T>(new HttpRequestMessage { Method = HttpMethod.Delete, RequestUri = new Uri(url, UriKind.RelativeOrAbsolute) });
 
-        public async Task<T> GetAsync<T>(string url)
-        {
-            return await SendAsync<T>(new HttpRequestMessage { RequestUri = new Uri(url, UriKind.RelativeOrAbsolute) });
-        }
+        public async Task<T> PostAsync<T>(string url, object content) =>
+            await SendAsync<T>(new HttpRequestMessage { Method = HttpMethod.Post, RequestUri = new Uri(url, UriKind.RelativeOrAbsolute) }, content);
 
-        public async Task<T> SendAsync<T>(HttpRequestMessage request, object data)
+        public async Task<T> PutAsync<T>(string url, object content) =>
+            await SendAsync<T>(new HttpRequestMessage { Method = HttpMethod.Put, RequestUri = new Uri(url, UriKind.RelativeOrAbsolute) }, content);
+
+        public async Task<T> SendAsync<T>(HttpRequestMessage request, object content)
         {
             var serializer = Converter ?? Serializer;
-            request.Content = new StringContent(serializer.Serialize(data), serializer.Encoding, serializer.ContentType);
-            return Deserialize<T>(await ExecuteAsync(request));
+            request.Content = new StringContent(serializer.Serialize(content), serializer.Encoding, serializer.ContentType);
+
+            var response = await ExecuteAsync(request);
+            var responseContent = await response.Content.ReadAsStringAsync();
+            return Deserialize<T>(responseContent);
         }
 
         public async Task<T> SendAsync<T>(HttpRequestMessage request)
         {
-            return Deserialize<T>(await ExecuteAsync(request));
+            var response = await ExecuteAsync(request);
+            var responseContent = await response.Content.ReadAsStringAsync();
+            return Deserialize<T>(responseContent);
         }
 
 
-        public async Task<string> ExecuteAsync(HttpRequestMessage request, bool authRetry = true)
+        public async Task<HttpResponseMessage> ExecuteAsync(HttpRequestMessage request, bool authRetry = true)
         {
             try
             {
                 Authenticator?.Authenticate(request);
                 var response = await SendAsync(request);
-                var content = await response.Content.ReadAsStringAsync();
 
                 if (response.IsSuccessStatusCode)
                 {
-                    return content;
+                    return response;
                 }
                 if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 {
                     OnAuthorizationError(request, response);
                     if (authRetry && Authenticator != null)
                     {
-                        return await ExecuteAsync(request, false); 
+                        return await ExecuteAsync(request, false);
                     }
                 }
+                var content = await response.Content.ReadAsStringAsync();
+
                 throw new RestException(response, content);
             }
             catch (HttpRequestException ex)
@@ -99,6 +103,14 @@ namespace Yansoft.Rest
         {
             Authenticator?.OnAuthorizationError(request, response);
             AuthorizationFailed?.Invoke(this, new AuthorizationErrorEventArgs(request, response));
+        }
+
+        private void CheckSerializer(object value, [CallerMemberName]string memberName = null)
+        {
+            if (value == null && Converter == null)
+            {
+                throw new InvalidOperationException($"Cannot set both {memberName} and {nameof(Converter)} to null.");
+            }
         }
 
         private void CheckConverter(object value)
