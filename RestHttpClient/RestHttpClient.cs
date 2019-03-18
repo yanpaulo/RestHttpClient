@@ -49,6 +49,9 @@ namespace Yansoft.Rest
         public async Task<T> SendAsync<T>(HttpRequestMessage request, object content) =>
             await SendAsync<T>(request, content, Converter ?? Serializer, Converter ?? Deserializer);
 
+        public async Task<T> SendAsync<T>(HttpRequestMessage request, object content, IConverter converter) =>
+            await SendAsync<T>(request, content, converter, converter);
+
         public async Task<T> SendAsync<T>(HttpRequestMessage request, object content, ISerializer serializer, IDeserializer deserializer)
         {
             request.Content = new StringContent(serializer.Serialize(content), serializer.Encoding, serializer.ContentType);
