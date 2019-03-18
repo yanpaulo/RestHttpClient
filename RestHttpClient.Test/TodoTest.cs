@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Yansoft.Rest.Test
 {
-    public class ClientTest
+    public class TodoTest
     {
         private RestHttpClient ws = new RestHttpClient
         {
