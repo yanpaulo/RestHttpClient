@@ -4,6 +4,8 @@
     <TargetFramework>netcoreapp2.2</TargetFramework>
 
     <IsPackable>false</IsPackable>
+
+    <RootNamespace>Yansoft.Rest.Test</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
