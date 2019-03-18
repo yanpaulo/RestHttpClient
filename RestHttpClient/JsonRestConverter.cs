@@ -12,12 +12,12 @@ namespace Yansoft.Rest
 
         public Encoding Encoding => Encoding.UTF8;
 
-        public T Deserialize<T>(string content)
+        public virtual T Deserialize<T>(string content)
         {
             return JsonConvert.DeserializeObject<T>(content, SerializerSettings);
         }
 
-        public string Serialize(object o)
+        public virtual string Serialize(object o)
         {
             return JsonConvert.SerializeObject(o, SerializerSettings);
         }
