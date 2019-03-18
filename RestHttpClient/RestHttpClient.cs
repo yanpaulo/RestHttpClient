@@ -48,7 +48,7 @@ namespace Yansoft.Rest
 
         public async Task<T> GetAsync<T>(string url)
         {
-            return await SendAsync<T>(new HttpRequestMessage { RequestUri = new Uri(url) });
+            return await SendAsync<T>(new HttpRequestMessage { RequestUri = new Uri(url, UriKind.RelativeOrAbsolute) });
         }
 
         public async Task<T> SendAsync<T>(HttpRequestMessage request, object data)

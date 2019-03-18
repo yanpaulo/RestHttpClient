@@ -8,7 +8,7 @@ namespace Yansoft.Rest
     {
         string ContentType { get; }
 
-        public Encoding Encoding { get; }
+        Encoding Encoding { get; }
 
         string Serialize(object o);
     }
