@@ -9,6 +9,8 @@
     <Product>RestHttpClient</Product>
     <Description>Simple and flexible REST client built on top of Microsoft's System.Net.HttpClient.</Description>
     <PackageTags>rest http HttpClient System.Net.HttpClient json serialization deserialization</PackageTags>
+    <RepositoryUrl>https://github.com/yanpaulo/RestHttpClient</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/yanpaulo/RestHttpClient</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>
