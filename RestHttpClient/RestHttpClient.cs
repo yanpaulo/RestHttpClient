@@ -113,8 +113,8 @@ namespace Yansoft.Rest
         #region Event Handlers
         protected virtual void OnAuthorizationError(HttpRequestMessage request, HttpResponseMessage response)
         {
-            Authenticator?.OnAuthorizationError(request, response);
             AuthorizationFailed?.Invoke(this, new AuthorizationErrorEventArgs(request, response));
+            Authenticator?.OnAuthorizationError(request, response);
         } 
         #endregion
 
