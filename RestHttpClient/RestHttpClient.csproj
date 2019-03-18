@@ -3,6 +3,12 @@
   <PropertyGroup>
     <TargetFramework>netstandard1.4</TargetFramework>
     <RootNamespace>Yansoft.Rest</RootNamespace>
+    <Version>0.1.0-alpha</Version>
+    <Authors>Yan Paulo</Authors>
+    <Company>Yansoft</Company>
+    <Product>RestHttpClient</Product>
+    <Description>Simple and flexible REST client built on top of Microsoft's System.Net.HttpClient.</Description>
+    <PackageTags>rest http HttpClient System.Net.HttpClient json serialization deserialization</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
