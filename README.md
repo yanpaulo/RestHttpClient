@@ -23,18 +23,18 @@ var createdTodo = await client.RestPostAsync<Todo>("todos", model);
 ```
 
 ### Customize serialization
-Implement one of ISerializer, IDeserializer, IConverter (combination of both) and set to according property on RestHttpClient:
+Implement one of `ISerializer`, `IDeserializer`, `IConverter (combination of both)` and set to according property on `RestHttpClient`:
 
 ```cs 
-    var client = new RestHttpClient
-    {
-        BaseAddress = new Uri("https://jsonplaceholder.typicode.com"),
-        Converter = new JsonRestConverter()
-    };
+var client = new RestHttpClient
+{
+    BaseAddress = new Uri("https://jsonplaceholder.typicode.com"),
+    Converter = new JsonRestConverter()
+};
 ```
 
 ### Authorization
-Implement IAuthenticator and set it to RestHttpClient.
+Implement `IAuthenticator` and set it to `RestHttpClient`.
 ```cs 
 var client = new RestHttpClient
 {
@@ -43,16 +43,11 @@ var client = new RestHttpClient
 };
 ```
 
-You can also override OnAuthorizationError or add an event handler to AuthorizationFailed event.
+You can also override OnAuthorizationError or add an event handler to `AuthorizationFailed` event.
 Requests failed with Unauthorized(401) status are retried once. Before the retry happens,
-OnAuthorizationError, AuthorizationFailed and Authenticator.OnAuthorizationError methods are invoked, in that order, and hence you can use these methods to update RestHttpClient or HttpRequestMessage to ensure that the next request will succeed.
+`OnAuthorizationError`, `AuthorizationFailed` and `Authenticator.OnAuthorizationError` methods are invoked, **in that order**, and hence you can use these methods to update RestHttpClient or HttpRequestMessage to ensure that the next request will succeed.
 Example:
 ```cs
-var client = new RestHttpClient
-{
-    BaseAddress = new Uri("https://jsonplaceholder.typicode.com"),
-};
-
 client.AuthorizationFailed += (o, e) =>
 {
     //Per request
@@ -60,4 +55,21 @@ client.AuthorizationFailed += (o, e) =>
     //Per instance
     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", "QWxhZGRpbjpvcGVuIHNlc2FtZQ==");
 };
+```
+
+### Less common cases
+For less common cases, write your request using the `HttpRequestMessage` class and send it throuth one of the available `RestSendAsync` overloads:
+```cs
+var json = "{ title: 'Lorem Ipsum', userId: 1 }";
+
+var request = new HttpRequestMessage
+{
+    Method = HttpMethod.Post,
+    Content = new StringContent(json, Encoding.UTF8, "application/json"),
+    RequestUri = new Uri("todos", UriKind.Relative)
+};
+
+var response = await client.RestSendAsync(request, authRetry: false);
+
+Assert.True(response.IsSuccessStatusCode);
 ```
