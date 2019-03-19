@@ -1,7 +1,10 @@
-﻿namespace Yansoft.Rest
+﻿using System.Net.Http;
+using System.Threading.Tasks;
+
+namespace Yansoft.Rest
 {
     public interface IDeserializer
     {
-        T Deserialize<T>(string content);
+        Task<T> DeserializeAsync<T>(HttpContent content);
     }
 }

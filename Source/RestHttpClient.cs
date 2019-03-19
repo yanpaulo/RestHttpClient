@@ -114,8 +114,7 @@ namespace Yansoft.Rest
         public async Task<T> RestSendAsync<T>(HttpRequestMessage request, IDeserializer deserializer)
         {
             var response = await RestSendAsync(request);
-            var responseContent = await response.Content.ReadAsStringAsync();
-            return deserializer.Deserialize<T>(responseContent);
+            return await deserializer.DeserializeAsync<T>(response.Content);
         }
 
         public async Task<T> RestSendAsync<T>(HttpRequestMessage request, object content, ISerializer serializer, IDeserializer deserializer)
@@ -123,8 +122,7 @@ namespace Yansoft.Rest
             request.Content = new StringContent(serializer.Serialize(content), serializer.Encoding, serializer.ContentType);
 
             var response = await RestSendAsync(request);
-            var responseContent = await response.Content.ReadAsStringAsync();
-            return deserializer.Deserialize<T>(responseContent);
+            return await deserializer.DeserializeAsync<T>(response.Content);
         }
 
         event EventHandler TesteEvent;
