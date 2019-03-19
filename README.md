@@ -34,27 +34,65 @@ var client = new RestHttpClient
 ```
 
 ### Authorization
-Implement `IAuthenticator` and set it to `RestHttpClient`.
+For per-object authentication, just set HttpClient's default headers:
 ```cs 
-var client = new RestHttpClient
-{
-    BaseAddress = new Uri("https://jsonplaceholder.typicode.com"),
-    Authenticator = new BasicAuthenticator()
-};
+client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic","QWxhZGRpbjpvcGVuIHNlc2FtZQ==");
 ```
 
-You can also override OnAuthorizationError or add an event handler to `AuthorizationFailed` event.
-Requests failed with Unauthorized(401) status are retried once. Before the retry happens,
-`OnAuthorizationError`, `AuthorizationFailed` and `Authenticator.OnAuthorizationError` methods are invoked, **in that order**, and hence you can use these methods to update RestHttpClient or HttpRequestMessage to ensure that the next request will succeed.
-Example:
-```cs
-client.AuthorizationFailed += (o, e) =>
+For per-request authentication, set a method or expression returning Task to `AuthenticationHandler` method.
+You can use Lambda syntax:
+```cs 
+client.AuthenticationHandler = async (request) =>
 {
-    //Per request
-    e.Request.Headers.Add("Authorization", "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==");
-    //Per instance
-    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", "QWxhZGRpbjpvcGVuIHNlc2FtZQ==");
+    request.Headers.Add("Authorization", "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==");
+}
+```
+
+You can use regular method syntax:
+```cs 
+async Task AuthenticateRequestAsync(HttpRequestMessage request)
+{
+    request.Headers.Add("Authorization", "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==");
+}
+//And somethere else:
+client.AuthenticationHandler = AuthenticateRequestAsync;
+```
+
+### Error handling
+Set a method or expression to `ErrorHandler` property:
+```cs
+client.ErrorHandler = async (request, response) =>
+{
+    //Use request and response object to determine which action to take
+    if (request.RequestUri.AbsolutePath.StartsWith("/api") && response.StatusCode == HttpStatusCode.Unauthorized)
+    {
+        //In this case we set Authentication global header...
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic","QWxhZGRpbjpvcGVuIHNlc2FtZQ==");
+        ///...and then resend a copy of the request, then return its response.
+        return await client.SendAsync(request.Clone());
+    }
+
+    //If you don't wish to handle an error, just return back the response object
+    return response;
 };
+```
+If there isn't an error handler or Response is null or unsuccessful after error handling, `RestException` will be thrown:
+```cs
+try
+{
+    var item = await client.RestGetAsync<Todo>("todos/800");
+}
+//Use RestException's Request, Response or Content properties to determine how to handle the Exception
+catch (RestException ex) when (ex.Response?.StatusCode == HttpStatusCode.NotFound)
+{
+    Console.WriteLine("Content not found.");
+}
+catch (RestException ex)
+{
+    Console.WriteLine("Request failed, check out its content: ");
+    Console.Write(ex.Content);
+    throw;
+}
 ```
 
 ### Less common cases
@@ -69,7 +107,7 @@ var request = new HttpRequestMessage
     RequestUri = new Uri("todos", UriKind.Relative)
 };
 
-var response = await client.RestSendAsync(request, authRetry: false);
+var response = await client.RestSendAsync(request);
 
 Assert.True(response.IsSuccessStatusCode);
 ```

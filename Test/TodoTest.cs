@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -33,7 +34,7 @@ namespace Yansoft.Rest.Test
         public async void PostByHttpRequestMessage()
         {
             var json = "{ \"title\": \"Lorem Ipsum\", \"userId\": 1 }";
-            
+
             var request = new HttpRequestMessage
             {
                 Method = HttpMethod.Post,
@@ -41,8 +42,29 @@ namespace Yansoft.Rest.Test
                 RequestUri = new Uri("todos", UriKind.Relative)
             };
 
-            var response = await client.RestSendAsync(request, authRetry: false);
+            var response = await client.RestSendAsync(request);
             Assert.True(response.IsSuccessStatusCode);
+        }
+
+        [Fact]
+        public async void ThrowsExceptionOnError()
+        {
+            try
+            {
+                var item = await client.RestGetAsync<Todo>("todos/800");
+                throw new InvalidOperationException("Shouldn't get here!");
+            }
+            //Use RestException's Request, Response or Content properties to determine how to handle the Exception
+            catch (RestException ex) when (ex.Response?.StatusCode == HttpStatusCode.NotFound)
+            {
+                Console.WriteLine("Content not found.");
+            }
+            catch (RestException ex)
+            {
+                Console.WriteLine("Request failed, check out its content: ");
+                Console.Write(ex.Content);
+                throw;
+            }
         }
     }
 }

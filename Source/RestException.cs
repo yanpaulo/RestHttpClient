@@ -7,16 +7,18 @@ namespace Yansoft.Rest
     {
         public string Content { get; set; }
 
+        public HttpRequestMessage Request { get; }
+
         public HttpResponseMessage Response { get; set; }
 
-        public RestException(HttpResponseMessage response, string content) : base($"Error requesting URL ({response.RequestMessage.RequestUri})")
+        public RestException(HttpRequestMessage request, HttpResponseMessage response, string content) : base($"Error requesting URL ({response.RequestMessage.RequestUri})")
         {
+            Request = request;
             Response = response;
             Content = content;
         }
 
-        public RestException(string message) : base(message) { }
 
-        public RestException(string message, Exception innerException) : base(message, innerException) { }
+        public RestException(string message, HttpRequestMessage request, Exception innerException) : base(message, innerException) { }
     }
 }
