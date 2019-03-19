@@ -92,6 +92,7 @@ catch (RestException ex)
     Console.WriteLine("Request failed, check out its content: ");
     Console.Write(ex.Content);
     throw;
+}
 ```
 
 ### Less common cases
