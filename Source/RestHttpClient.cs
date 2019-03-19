@@ -70,15 +70,12 @@ namespace Yansoft.Rest
         public async Task<T> RestGetAsync<T>(string url) =>
             await RestSendAsync<T>(new HttpRequestMessage { Method = HttpMethod.Get, RequestUri = new Uri(url, UriKind.RelativeOrAbsolute) });
         
-        public async Task<T> RestGetAsync<T>(string url, T type) =>
-            await RestSendAsync<T>(new HttpRequestMessage { Method = HttpMethod.Get, RequestUri = new Uri(url, UriKind.RelativeOrAbsolute) });
-
         /// <summary>
         /// Sends a GET request to the specified url and returns its content converted by a deserializer.
         /// </summary>
         /// <typeparam name="T">Type of the object to be returned.</typeparam>
         /// <param name="url">Absolute or relative url to send the request to.</param>
-        /// <param name="T">Object to infer the type from (usually an anonymous object).</param>
+        /// <param name="typeObject">Object to infer the type from (usually an anonymous object).</param>
         /// <returns>Content returned by the server, serialized as T.</returns>
         public async Task<T> RestGetAsync<T>(string url, T typeObject) =>
             await RestSendAsync<T>(new HttpRequestMessage { Method = HttpMethod.Get, RequestUri = new Uri(url, UriKind.RelativeOrAbsolute) });
@@ -115,10 +112,7 @@ namespace Yansoft.Rest
         #region RestSendAsync Overloads
         public async Task<T> RestSendAsync<T>(HttpRequestMessage request) =>
             await RestSendAsync<T>(request, Deserializer ?? Converter);
-
-        public async Task<T> RestSendAsync<T>(HttpRequestMessage request, T type) =>
-            await RestSendAsync<T>(request, Converter ?? Deserializer, type);
-
+        
         public async Task<T> RestSendAsync<T>(HttpRequestMessage request, object content) =>
             await RestSendAsync<T>(request, content, Serializer ?? Converter, Deserializer ?? Converter);
 
@@ -133,13 +127,6 @@ namespace Yansoft.Rest
             return await deserializer.DeserializeAsync<T>(response.Content);
         }
         
-        public async Task<T> RestSendAsync<T>(HttpRequestMessage request, IDeserializer deserializer, T type)
-        {
-            var response = await RestSendAsync(request);
-            var responseContent = await response.Content.ReadAsStringAsync();
-            return deserializer.Deserialize(responseContent, type);
-        }
-
         public async Task<T> RestSendAsync<T>(HttpRequestMessage request, object content, ISerializer serializer, IDeserializer deserializer)
         {
             request.Content = new StringContent(serializer.Serialize(content), serializer.Encoding, serializer.ContentType);
