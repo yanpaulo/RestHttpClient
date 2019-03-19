@@ -76,6 +76,23 @@ client.ErrorHandler = async (request, response) =>
     return response;
 };
 ```
+If there isn't an error handler or Response is null or unsuccessful after error handling, `RestException` will be thrown:
+```cs
+try
+{
+    var item = await client.RestGetAsync<Todo>("todos/800");
+}
+//Use RestException's Request, Response or Content properties to determine how to handle the Exception
+catch (RestException ex) when (ex.Response?.StatusCode == HttpStatusCode.NotFound)
+{
+    Console.WriteLine("Content not found.");
+}
+catch (RestException ex)
+{
+    Console.WriteLine("Request failed, check out its content: ");
+    Console.Write(ex.Content);
+    throw;
+```
 
 ### Less common cases
 For less common cases, write your request using the `HttpRequestMessage` class and send it throuth one of the available `RestSendAsync` overloads:

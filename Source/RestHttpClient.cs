@@ -155,12 +155,12 @@ namespace Yansoft.Rest
 
                 OnRequestError(request, response);
                 var content = await response.Content.ReadAsStringAsync();
-                throw new RestException(response, content);
+                throw new RestException(request, response, content);
             }
             catch (HttpRequestException ex)
             {
                 OnRequestError(request);
-                throw new RestException($"Erro ao se conectar ao servidor.", ex);
+                throw new RestException($"Erro ao se conectar ao servidor.", request, ex);
             }
         }
         #endregion
