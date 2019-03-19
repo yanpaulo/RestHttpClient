@@ -64,6 +64,9 @@ namespace Yansoft.Rest
         /// <returns>Content returned by the server, serialized as T.</returns>
         public async Task<T> RestGetAsync<T>(string url) =>
             await RestSendAsync<T>(new HttpRequestMessage { Method = HttpMethod.Get, RequestUri = new Uri(url, UriKind.RelativeOrAbsolute) });
+        
+        public async Task<T> RestGetAsync<T>(string url, T type) =>
+            await RestSendAsync<T>(new HttpRequestMessage { Method = HttpMethod.Get, RequestUri = new Uri(url, UriKind.RelativeOrAbsolute) });
 
         /// <summary>
         /// Sends a POST request to the specified url with its body serialized by a serializer and returns its content converted by a deserializer.
@@ -98,6 +101,9 @@ namespace Yansoft.Rest
         public async Task<T> RestSendAsync<T>(HttpRequestMessage request) =>
             await RestSendAsync<T>(request, Converter ?? Deserializer);
 
+        public async Task<T> RestSendAsync<T>(HttpRequestMessage request, T type) =>
+            await RestSendAsync<T>(request, Converter ?? Deserializer, type);
+
         public async Task<T> RestSendAsync<T>(HttpRequestMessage request, object content) =>
             await RestSendAsync<T>(request, content, Converter ?? Serializer, Converter ?? Deserializer);
 
@@ -111,6 +117,13 @@ namespace Yansoft.Rest
             var response = await RestSendAsync(request);
             var responseContent = await response.Content.ReadAsStringAsync();
             return deserializer.Deserialize<T>(responseContent);
+        }
+        
+        public async Task<T> RestSendAsync<T>(HttpRequestMessage request, IDeserializer deserializer, T type)
+        {
+            var response = await RestSendAsync(request);
+            var responseContent = await response.Content.ReadAsStringAsync();
+            return deserializer.Deserialize(responseContent, type);
         }
 
         public async Task<T> RestSendAsync<T>(HttpRequestMessage request, object content, ISerializer serializer, IDeserializer deserializer)
