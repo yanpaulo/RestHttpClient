@@ -129,7 +129,7 @@ namespace Yansoft.Rest
         
         public async Task<T> RestSendAsync<T>(HttpRequestMessage request, object content, ISerializer serializer, IDeserializer deserializer)
         {
-            request.Content = new StringContent(serializer.Serialize(content), serializer.Encoding, serializer.ContentType);
+            request.Content = await serializer.SerializeAsync(content);
 
             var response = await RestSendAsync(request);
             return await deserializer.DeserializeAsync<T>(response.Content);

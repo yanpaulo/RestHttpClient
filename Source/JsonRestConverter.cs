@@ -12,7 +12,7 @@ namespace Yansoft.Rest
         public JsonSerializer JsonSerializer { get; set; } 
             = new JsonSerializer();
 
-        public string ContentType => "application/json";
+        public string MediaType => "application/json";
 
         public Encoding Encoding => Encoding.UTF8;
         
@@ -28,9 +28,11 @@ namespace Yansoft.Rest
             }
         }
         
-        public virtual string Serialize(object o)
+        public virtual Task<HttpContent> SerializeAsync(object o)
         {
-            return JToken.FromObject(o, JsonSerializer).ToString();
+            var stringContent = JToken.FromObject(o, JsonSerializer).ToString();
+            var content = new StringContent(stringContent, Encoding, MediaType);
+            return Task.FromResult(content as HttpContent);
         }
     }
 }

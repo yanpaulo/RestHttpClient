@@ -1,13 +1,11 @@
-﻿using System.Text;
+﻿using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Yansoft.Rest
 {
     public interface ISerializer
     {
-        string ContentType { get; }
-
-        Encoding Encoding { get; }
-
-        string Serialize(object o);
+        Task<HttpContent> SerializeAsync(object o);
     }
 }
