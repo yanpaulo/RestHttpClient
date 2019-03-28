@@ -135,8 +135,9 @@ Assert.True(response.IsSuccessStatusCode);
 Of course you can always use any of HttpClient's methods for any case.
 
 ### RestHttpMessageHandler
-As you may have thought, [Authorization](#authorization) and [Error handling](#error-handling) are actually done by RestHttpMessageHandler and not by RestHttpClient, and hence you can also use its capabilities with the regular HttpClient.
-Naturally, Authorization and Error handling capabilities won't be present on RestHttpClient if you use an HttpMessageHandler other than RestHttpMessageHandler or devired ones.
+As you may have thought, [Authorization](#authorization) and [Error handling](#error-handling) are actually done by `RestHttpMessageHandler` and not by `RestHttpClient`, and hence you can also use its capabilities with the regular `HttpClient`.
+
+You can also use any other `HttpMessageHandler`-derived type with `RestHttpClient`, but please note that **Authorization** and **Error handling** capabilities won't be present on `RestHttpClient` if it doesn't implement `IRestMessageHandler`.
 
 ### Version 0.5.0
-v0.5.0 had those Rest-prefixes before RestHttpClient's specific calls. Some changes have been made and these prefixes don't exist anymore, so just get rid of them in your calls! ;)
+v0.5.0 had those Rest-prefixes before `RestHttpClient`'s specific calls. Some changes have been made and these prefixes don't exist anymore, so just get rid of them in your calls! ;)
