@@ -11,27 +11,22 @@ namespace Yansoft.Rest
         #region Attributes
         private ISerializer serializer;
         private IDeserializer deserializer;
-        private IConverter converter = new JsonRestConverter(); 
+        private IConverter converter = new JsonRestConverter();
         #endregion
 
-        #region Events
-        /// <summary>
-        /// Event fired when a request fails.
-        /// </summary>
-        public event EventHandler<RequestErrorEventArgs> RequestFailed;
-        #endregion
+        public RestHttpClient() : base(new RestHttpMessageHandler())
+        {
+        }
+
+        public RestHttpClient(HttpMessageHandler handler) : this(handler, true)
+        {
+        }
+
+        public RestHttpClient(HttpMessageHandler handler, bool disposeHandler) : base(handler, disposeHandler)
+        {
+        }
 
         #region Properties
-        /// <summary>
-        /// Gets or sets the Authenticator for this instance.
-        /// </summary>
-        public Func<HttpRequestMessage, Task> AuthenticationHandler { get; set; }
-
-        /// <summary>
-        /// Gets or sets the ErrorHandler for ths instance.
-        /// </summary>
-        public Func<HttpRequestMessage, HttpResponseMessage, Task<HttpResponseMessage>> ErrorHandler { get; set; }
-
         /// <summary>
         /// Gets or sets the Serializer for this instance.
         /// </summary>
@@ -106,7 +101,7 @@ namespace Yansoft.Rest
         /// <typeparam name="T">Type of the object to be returned.</typeparam>
         /// <param name="url">Absolute or relative url to send the request to.</param>
         public async Task RestDeleteAsync<T>(string url) =>
-            await RestSendAsync(new HttpRequestMessage { Method = HttpMethod.Delete, RequestUri = new Uri(url, UriKind.RelativeOrAbsolute) });
+            await SendAsync(new HttpRequestMessage { Method = HttpMethod.Delete, RequestUri = new Uri(url, UriKind.RelativeOrAbsolute) });
         #endregion
 
         #region RestSendAsync Overloads
@@ -123,7 +118,7 @@ namespace Yansoft.Rest
         #region RestSendAsync Implementations
         public async Task<T> RestSendAsync<T>(HttpRequestMessage request, IDeserializer deserializer)
         {
-            var response = await RestSendAsync(request);
+            var response = await SendAsync(request);
             return await deserializer.DeserializeAsync<T>(response.Content);
         }
         
@@ -131,58 +126,18 @@ namespace Yansoft.Rest
         {
             request.Content = await serializer.SerializeAsync(content);
 
-            var response = await RestSendAsync(request);
+            var response = await SendAsync(request);
             return await deserializer.DeserializeAsync<T>(response.Content);
         }
-
-        event EventHandler TesteEvent;
 
         /// <summary>
         /// Sends a request specified by the request parameter.
         /// </summary>
         /// <param name="request">HttpRequestMessage instance describing the request.</param>
         /// <returns></returns>
-        public async Task<HttpResponseMessage> RestSendAsync(HttpRequestMessage request)
-        {
-            try
-            {
-                if (AuthenticationHandler != null)
-                {
-                    await AuthenticationHandler(request);
-                }
-                var response = await SendAsync(request);
-                
-                if(!response.IsSuccessStatusCode && ErrorHandler != null)
-                {
-                    response = await ErrorHandler(request, response);
-                }
-                if (response.IsSuccessStatusCode)
-                {
-                    return response;
-                }
+        public async Task<HttpResponseMessage> RestSendAsync(HttpRequestMessage request) =>
+            await SendAsync(request);
 
-                OnRequestError(request, response);
-                var content = await response.Content.ReadAsStringAsync();
-                throw new RestException(request, response, content);
-            }
-            catch (HttpRequestException ex)
-            {
-                OnRequestError(request);
-                throw new RestException($"Erro ao se conectar ao servidor.", request, ex);
-            }
-        }
-        #endregion
-
-        #region Event Handlers
-        /// <summary>
-        /// Method called every time a request fails.
-        /// </summary>
-        /// <param name="request"></param>
-        /// <param name="response"></param>
-        protected virtual void OnRequestError(HttpRequestMessage request, HttpResponseMessage response = null)
-        {
-            RequestFailed?.Invoke(this, new RequestErrorEventArgs(request, response));
-        } 
         #endregion
 
         #region Utility Methods
