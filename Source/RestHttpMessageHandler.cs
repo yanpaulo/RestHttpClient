@@ -22,28 +22,18 @@ namespace Yansoft.Rest
         /// <summary>
         /// Gets or sets the ErrorHandler for ths instance.
         /// </summary>
-        public Func<HttpRequestMessage, HttpResponseMessage, Task<HttpResponseMessage>> ErrorHandler { get; set; }
+        public Func<HttpRequestMessage, HttpResponseMessage, Task<HttpRequestMessage>> ErrorHandler { get; set; }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) => 
             await DoSendAsync(request, cancellationToken, this, base.SendAsync, AuthenticationHandler, ErrorHandler, RequestFailed);
-
-        /// <summary>
-        /// Method called every time a request fails.
-        /// </summary>
-        /// <param name="request"></param>
-        /// <param name="response"></param>
-        protected virtual void OnRequestError(HttpRequestMessage request, HttpResponseMessage response = null)
-        {
-            RequestFailed?.Invoke(this, new RequestErrorEventArgs(request, response));
-        }
-
+        
         public static async Task<HttpResponseMessage> DoSendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken,
             object sender,
             Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> send,
             Func<HttpRequestMessage, Task<HttpRequestMessage>> auth,
-            Func<HttpRequestMessage, HttpResponseMessage, Task<HttpResponseMessage>> error,
+            Func<HttpRequestMessage, HttpResponseMessage, Task<HttpRequestMessage>> error,
             EventHandler<RequestErrorEventArgs> errorEventHandler)
         {
             try
@@ -56,7 +46,12 @@ namespace Yansoft.Rest
 
                 if (!response.IsSuccessStatusCode && error != null)
                 {
-                    response = await error(request, response);
+                    var retry = await error(request, response);
+                    if (retry != null)
+                    {
+                        request = retry;
+                        response = await send(request, cancellationToken);
+                    }
                 }
                 if (response.IsSuccessStatusCode)
                 {

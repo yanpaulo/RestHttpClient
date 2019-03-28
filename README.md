@@ -39,44 +39,62 @@ For per-object authentication, just set HttpClient's default headers:
 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic","QWxhZGRpbjpvcGVuIHNlc2FtZQ==");
 ```
 
-For per-request authentication, set a method or expression returning Task to `AuthenticationHandler` method.
-You can use Lambda syntax:
+For per-request authentication, create an instance of `RestHttpMessageHandler` and set its `AuthenticationHandler` property as follows:
+Lambda syntax:
 ```cs 
-client.AuthenticationHandler = async (request) =>
+var handler = new RestHttpMessageHandler();
 {
-    request.Headers.Add("Authorization", "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==");
-}
+    AuthenticationHandler = async (request) =>
+    {
+        request.Headers.Add("Authorization", "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==");
+        return request;
+    }
+};
+
+//Set handler through RestHttpClient's constructor
+var client = new RestHttpClient(handler);
 ```
 
-You can use regular method syntax:
+Regular method syntax:
 ```cs 
-async Task AuthenticateRequestAsync(HttpRequestMessage request)
+//Declare handler method
+async Task<HttpRequestMessage> AuthenticateRequestAsync(HttpRequestMessage request)
 {
     request.Headers.Add("Authorization", "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==");
+    return request;
 }
-//And somethere else:
-client.AuthenticationHandler = AuthenticateRequestAsync;
+
+//Somethere else:
+var handler = new RestHttpMessageHandler
+{
+    AuthenticationHandler = AuthenticateRequestAsync
+};
+
+//Set handler through RestHttpClient's constructor
+var client = new RestHttpClient(handler);
 ```
 
 ### Error handling
-Set a method or expression to `ErrorHandler` property:
+Set a method or expression to `RestHttpMessageHandler`'s `ErrorHandler` property. It will be called in case of error responses:
 ```cs
-client.ErrorHandler = async (request, response) =>
+var handler = new RestHttpMessageHandler();
+var client = new RestHttpClient(handler);
+handler.ErrorHandler = async (request, response) =>
 {
     //Use request and response object to determine which action to take
     if (request.RequestUri.AbsolutePath.StartsWith("/api") && response.StatusCode == HttpStatusCode.Unauthorized)
     {
         //In this case we set Authentication global header...
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic","QWxhZGRpbjpvcGVuIHNlc2FtZQ==");
-        ///...and then resend a copy of the request, then return its response.
-        return await client.SendAsync(request.Clone());
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", "QWxhZGRpbjpvcGVuIHNlc2FtZQ==");
+        ///... and then return a copy of the request, which will be resent.
+        return request.Clone();
     }
 
-    //If you don't wish to handle an error, just return back the response object
-    return response;
+    //If you don't wish to resend the request, just return null;
+    return null;
 };
 ```
-If there isn't an error handler or Response is null or unsuccessful after error handling, `RestException` will be thrown:
+If there isn't an error handler set or if the error handler doesn't return a Request object, `RestException` will be thrown:
 ```cs
 try
 {
@@ -94,6 +112,7 @@ catch (RestException ex)
     throw;
 }
 ```
+Please note that ErrorHandler method won't be called again if the returned request also fails.
 
 ### Less common cases
 For less common cases, write your request using the `HttpRequestMessage` class and send it throuth one of the available `RestSendAsync` overloads:
