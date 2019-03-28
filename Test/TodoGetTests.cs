@@ -15,7 +15,7 @@ namespace Yansoft.Rest.Test
         [Fact]
         public async void GetAll()
         {
-            var todos = await client.RestGetAsync<List<Todo>>("todos");
+            var todos = await client.GetAsync<List<Todo>>("todos");
 
             Assert.Equal(200, todos.Count);
         }
@@ -26,7 +26,7 @@ namespace Yansoft.Rest.Test
             var todoListType = new List<object>()
                 .Select(t => new { Id = 0, UserId = 0, Title = "" }).ToList(); 
             
-            var todos = await client.RestGetAsync("todos", todoListType);
+            var todos = await client.GetAsync("todos", todoListType);
 
             Assert.Equal(200, todos.Count);
         }
@@ -34,7 +34,7 @@ namespace Yansoft.Rest.Test
         [Fact]
         public async void GetSingle()
         {
-            var todo = await client.RestGetAsync<Todo>("todos/1");
+            var todo = await client.GetAsync<Todo>("todos/1");
 
             Assert.Equal(1, todo.Id);
         }
@@ -44,7 +44,7 @@ namespace Yansoft.Rest.Test
         {
             var todoType = new { Id = 0, UserId = 0, Title = "" };
 
-            var todo = await client.RestGetAsync("todos/1", todoType);
+            var todo = await client.GetAsync("todos/1", todoType);
 
             Assert.Equal(1, todo.Id);
         }
@@ -53,8 +53,8 @@ namespace Yansoft.Rest.Test
         public async void GetByFullUrlEqualToRelative()
         {
             const string path = "todos/1";
-            var relative = await client.RestGetAsync<Todo>(path);
-            var full = await client.RestGetAsync<Todo>($"https://jsonplaceholder.typicode.com/{path}");
+            var relative = await client.GetAsync<Todo>(path);
+            var full = await client.GetAsync<Todo>($"https://jsonplaceholder.typicode.com/{path}");
 
             Assert.Equal(relative, full);
         }
@@ -66,9 +66,9 @@ namespace Yansoft.Rest.Test
             
             const string path = "todos/1";
             //Leave one as standard type
-            var relative = await client.RestGetAsync<Todo>(path);
+            var relative = await client.GetAsync<Todo>(path);
             //One as anonymous type
-            var full = await client.RestGetAsync($"https://jsonplaceholder.typicode.com/{path}", todoType);
+            var full = await client.GetAsync($"https://jsonplaceholder.typicode.com/{path}", todoType);
 
             Assert.Equal(relative.Id, full.Id);
         }

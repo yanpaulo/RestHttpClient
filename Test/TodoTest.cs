@@ -24,7 +24,7 @@ namespace Yansoft.Rest.Test
                 Title = "Lorem Ipsum"
             };
 
-            var item = await client.RestPostAsync<Todo>("todos", todo);
+            var item = await client.PostAsync<Todo>("todos", todo);
 
             Assert.Equal(todo.UserId, item.UserId);
             Assert.Equal(todo.Title, item.Title);
@@ -42,7 +42,7 @@ namespace Yansoft.Rest.Test
                 RequestUri = new Uri("todos", UriKind.Relative)
             };
 
-            var response = await client.RestSendAsync(request);
+            var response = await client.SendAsync(request);
             Assert.True(response.IsSuccessStatusCode);
         }
 
@@ -51,7 +51,7 @@ namespace Yansoft.Rest.Test
         {
             try
             {
-                var item = await client.RestGetAsync<Todo>("todos/800");
+                var item = await client.GetAsync<Todo>("todos/800");
                 throw new InvalidOperationException("Shouldn't get here!");
             }
             //Use RestException's Request, Response or Content properties to determine how to handle the Exception

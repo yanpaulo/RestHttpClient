@@ -9,9 +9,9 @@ var client = new RestHttpClient
     BaseAddress = new Uri("https://jsonplaceholder.typicode.com")
 };
 
-var list = await client.RestGetAsync<List<Todo>>("todos");
+var list = await client.GetAsync<List<Todo>>("todos");
 
-var todo = await client.RestGetAsync<Todo>("todos/1");
+var todo = await client.GetAsync<Todo>("todos/1");
 
 var model = new Todo
 {
@@ -19,7 +19,7 @@ var model = new Todo
     UserId = 1
 };
 
-var createdTodo = await client.RestPostAsync<Todo>("todos", model);
+var createdTodo = await client.PostAsync<Todo>("todos", model);
 ```
 
 ### Customize serialization
@@ -64,7 +64,7 @@ async Task<HttpRequestMessage> AuthenticateRequestAsync(HttpRequestMessage reque
     return request;
 }
 
-//Somethere else:
+//...and then somethere else:
 var handler = new RestHttpMessageHandler
 {
     AuthenticationHandler = AuthenticateRequestAsync
@@ -94,11 +94,13 @@ handler.ErrorHandler = async (request, response) =>
     return null;
 };
 ```
+Please note that ErrorHandler method won't be called again if the returned request also fails.
+
 If there isn't an error handler set or if the error handler doesn't return a Request object, `RestException` will be thrown:
 ```cs
 try
 {
-    var item = await client.RestGetAsync<Todo>("todos/800");
+    var item = await client.GetAsync<Todo>("todos/800");
 }
 //Use RestException's Request, Response or Content properties to determine how to handle the Exception
 catch (RestException ex) when (ex.Response?.StatusCode == HttpStatusCode.NotFound)
@@ -112,10 +114,10 @@ catch (RestException ex)
     throw;
 }
 ```
-Please note that ErrorHandler method won't be called again if the returned request also fails.
+
 
 ### Less common cases
-For less common cases, write your request using the `HttpRequestMessage` class and send it throuth one of the available `RestSendAsync` overloads:
+For less common cases, write your request using the `HttpRequestMessage` class and send it throuth one of the available `SendAsync` overloads:
 ```cs
 var json = "{ title: 'Lorem Ipsum', userId: 1 }";
 
@@ -130,3 +132,8 @@ var response = await client.RestSendAsync(request);
 
 Assert.True(response.IsSuccessStatusCode);
 ```
+Of course you can always use any of HttpClient's methods for any case.
+
+### RestHttpMessageHandler
+As you may have thought, [Authorization](#authorization) and [Error handling](#error-handling) are actually done by RestHttpMessageHandler and not by RestHttpClient, and hence you can also use its capabilities with the regular HttpClient.
+Naturally, Authorization and Error handling capabilities won't be present on RestHttpClient if you use an HttpMessageHandler other than RestHttpMessageHandler or devired ones.
