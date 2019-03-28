@@ -9,7 +9,7 @@ namespace Yansoft.Rest
 
         public HttpResponseMessage Response { get; private set; }
 
-        public RequestErrorEventArgs(HttpRequestMessage request, HttpResponseMessage response)
+        public RequestErrorEventArgs(HttpRequestMessage request, HttpResponseMessage response = null)
         {
             Request = request;
             Response = response;

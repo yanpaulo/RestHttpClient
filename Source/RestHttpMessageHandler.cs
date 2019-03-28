@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Yansoft.Rest
 {
-    public class RestHttpMessageHandler : HttpClientHandler
+    public class RestHttpMessageHandler : HttpClientHandler, IRestMessageHandler
     {
         /// <summary>
         /// Event fired when a request fails.
@@ -17,42 +17,15 @@ namespace Yansoft.Rest
         /// <summary>
         /// Gets or sets the Authenticator for this instance.
         /// </summary>
-        public Func<HttpRequestMessage, Task> AuthenticationHandler { get; set; }
+        public Func<HttpRequestMessage, Task<HttpRequestMessage>> AuthenticationHandler { get; set; }
 
         /// <summary>
         /// Gets or sets the ErrorHandler for ths instance.
         /// </summary>
         public Func<HttpRequestMessage, HttpResponseMessage, Task<HttpResponseMessage>> ErrorHandler { get; set; }
 
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            try
-            {
-                if (AuthenticationHandler != null)
-                {
-                    await AuthenticationHandler(request);
-                }
-                var response = await base.SendAsync(request, cancellationToken);
-
-                if (!response.IsSuccessStatusCode && ErrorHandler != null)
-                {
-                    response = await ErrorHandler(request, response);
-                }
-                if (response.IsSuccessStatusCode)
-                {
-                    return response;
-                }
-
-                OnRequestError(request, response);
-                var content = await response.Content.ReadAsStringAsync();
-                throw new RestException(request, response, content);
-            }
-            catch (HttpRequestException ex)
-            {
-                OnRequestError(request);
-                throw new RestException($"Error connecting to server.", request, ex);
-            }
-        }
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) => 
+            await DoSendAsync(request, cancellationToken, this, base.SendAsync, AuthenticationHandler, ErrorHandler, RequestFailed);
 
         /// <summary>
         /// Method called every time a request fails.
@@ -62,6 +35,43 @@ namespace Yansoft.Rest
         protected virtual void OnRequestError(HttpRequestMessage request, HttpResponseMessage response = null)
         {
             RequestFailed?.Invoke(this, new RequestErrorEventArgs(request, response));
+        }
+
+        public static async Task<HttpResponseMessage> DoSendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken,
+            object sender,
+            Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> send,
+            Func<HttpRequestMessage, Task<HttpRequestMessage>> auth,
+            Func<HttpRequestMessage, HttpResponseMessage, Task<HttpResponseMessage>> error,
+            EventHandler<RequestErrorEventArgs> errorEventHandler)
+        {
+            try
+            {
+                if (auth != null)
+                {
+                    await auth(request);
+                }
+                var response = await send(request, cancellationToken);
+
+                if (!response.IsSuccessStatusCode && error != null)
+                {
+                    response = await error(request, response);
+                }
+                if (response.IsSuccessStatusCode)
+                {
+                    return response;
+                }
+                
+                errorEventHandler?.Invoke(sender, new RequestErrorEventArgs(request, response));
+                var content = await response.Content.ReadAsStringAsync();
+                throw new RestException(request, response, content);
+            }
+            catch (HttpRequestException ex)
+            {
+                errorEventHandler?.Invoke(sender, new RequestErrorEventArgs(request));
+                throw new RestException($"Error connecting to server.", request, ex);
+            }
         }
     }
 }
