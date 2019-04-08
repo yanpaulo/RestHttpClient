@@ -83,11 +83,10 @@ namespace Yansoft.Rest
 
         /// <summary>
         /// Sends a GET request to the specified url and returns its content converted by a deserializer.
-        /// If urlAppend is true, then Request URL prefix is obtained from RestResource attribute on T, if present.
         /// </summary>
         /// <typeparam name="T">Type of the object to be returned.</typeparam>
         /// <param name="url">string to be appended after the request URL.</param>
-        /// <param name="urlAppend">If true, 'url' parameter is appended after the path specified in RestResource on T.</param>
+        /// <param name="urlAppend">If true, 'url' parameter is appended after the path specified in T's RestResourceAttribute.</param>
         /// <returns>Content returned by the server, serialized as T.</returns>
         public async Task<T> GetAsync<T>(string url, bool urlAppend)
         {
@@ -132,7 +131,7 @@ namespace Yansoft.Rest
         /// </summary>
         /// <param name="url">string to be appended after the request URL.</param>
         /// <param name="content">Content to be serialized and send in the request body.</param>
-        /// <param name="urlAppend">If true, 'url' parameter is appended after the path specified in RestResource on T.</param>
+        /// <param name="urlAppend">If true, 'url' parameter is appended after the path specified in T's RestResourceAttribute.</param>
         public async Task PostAsync(string url, object content, bool urlAppend) =>
             await SendAsync(url, HttpMethod.Post, content, urlAppend);
 
@@ -142,7 +141,7 @@ namespace Yansoft.Rest
         /// <typeparam name="T">Type of the object to be returned.</typeparam>
         /// <param name="url">string to be appended after the request URL.</param>
         /// <param name="content">Content to be serialized and send in the request body.</param>
-        /// <param name="urlAppend">If true, 'url' parameter is appended after the path specified in RestResource on T.</param>
+        /// <param name="urlAppend">If true, 'url' parameter is appended after the path specified in T's RestResourceAttribute.</param>
         /// <returns>Content returned by the server, serialized as T</returns>
         public async Task<T> PostAsync<T>(string url, object content, bool urlAppend) =>
             await SendAsync<T>(url, HttpMethod.Post, content, urlAppend);
@@ -174,7 +173,7 @@ namespace Yansoft.Rest
         /// <typeparam name="T">Type of the object to be returned.</typeparam>
         /// <param name="url">string to be appended after the request URL.</param>
         /// <param name="content">Content to be serialized and send in the request body.</param>
-        /// <param name="urlAppend">If true, 'url' parameter is appended after the path specified in RestResource on T.</param>
+        /// <param name="urlAppend">If true, 'url' parameter is appended after the path specified in T's RestResourceAttribute.</param>
         /// <returns>Content returned by the server, serialized as T</returns>
         public async Task<T> PutAsync<T>(string url, object content, bool urlAppend) =>
             await SendAsync<T>(url, HttpMethod.Put, content, urlAppend);
@@ -184,7 +183,7 @@ namespace Yansoft.Rest
         /// </summary>
         /// <param name="url">string to be appended after the request URL.</param>
         /// <param name="content">Content to be serialized and send in the request body.</param>
-        /// <param name="urlAppend">If true, 'url' parameter is appended after the path specified in RestResource on T.</param>
+        /// <param name="urlAppend">If true, 'url' parameter is appended after the path specified in T's RestResourceAttribute.</param>
         public async Task PutAsync(string url, object content, bool urlAppend) =>
             await SendAsync(url, HttpMethod.Put, content, urlAppend);
 
